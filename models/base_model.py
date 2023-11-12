@@ -1,91 +1,87 @@
 #!/usr/bin/python3
-"""Defines the UniqueBaseModel class."""
-import json
-from uuid import uuid4
-from datetime import datetime
+"""This is the base model class for AirBnB"""
+import uuid
 import models
+from datetime import datetime
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, DateTime
+Base = declarative_base()
 
 
-class UniqueBaseModel:
-    """Represents a uniquely defined BaseModel for a custom project."""
+class BaseModel:
+    """This class will defines all common attributes/methods
+    for other classes
+    Attributes:
+        id: primary key, string of 60 chars
+        created_at: datetime obj, indicate when the instance is created
+        updated_at: datetime obj, indicate when the instance is updated
+    """
+    id = Column(String(60), primary_key=True)
+    created_at = Column(DateTime, default=datetime.utcnow(), nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow(), nullable=False)
 
     def __init__(self, *args, **kwargs):
-        """Initialize a new UniqueBaseModel.
-
+        """Instantiation of base model class
         Args:
-            *args (any): Unused.
-            **kwargs (dict): Key/value pairs of attributes.
+            args: it won't be used
+            kwargs: arguments for the constructor of the BaseModel
+        Attributes:
+            id: unique id generated
+            created_at: creation date
+            updated_at: updated date
         """
-        tform = "%Y-%m-%dT%H:%M:%S.%f"
-        self.unique_id = str(uuid4())
-        self.creation_date = datetime.today()
-        self.last_update = datetime.today()
-        if len(kwargs) != 0:
-            for k, v in kwargs.items():
-                if k == "creation_date" or k == "last_update":
-                    self.__dict__[k] = datetime.strptime(v, tform)
-                else:
-                    self.__dict__[k] = v
+        if kwargs:
+            for key, value in kwargs.items():
+                if key == "created_at" or key == "updated_at":
+                    value = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S.%f")
+                if key != "__class__":
+                    setattr(self, key, value)
         else:
-            models.storage.new(self)
+            self.id = str(uuid.uuid4())
+            self.created_at = self.updated_at = datetime.now()
+        if not self.id:
+            self.id = str(uuid.uuid4())
+        d = datetime.now()
+        if not self.created_at:
+            self.created_at = self.updated_at = d
+        if not self.updated_at:
+            self.updated_at = d
 
-    def update(self):
-        """Update last_update with the current datetime."""
-        self.last_update = datetime.today()
-        models.storage.save()
-
-    def to_custom_dict(self):
-        """Return a custom dictionary representation of the UniqueBaseModel instance.
-
-        Includes the key/value pair __custom_class__ representing
-        the custom class name of the object.
+    def __str__(self):
+        """returns a string
+        Return:
+            returns a string of class name, id, and dictionary
         """
-        rdict = self.__dict__.copy()
-        rdict["creation_date"] = self.creation_date.isoformat()
-        rdict["last_update"] = self.last_update.isoformat()
-        rdict["__custom_class__"] = self.__class__.__name__
-        return rdict
+        return "[{}] ({}) {}".format(
+            type(self).__name__, self.id, self.__dict__)
 
-    def __custom_str__(self):
-        """Return the custom print/str representation of the UniqueBaseModel instance."""
-        clname = self.__class__.__name__
-        return "[{}] ({}) {}".format(clname, self.unique_id, self.__dict__)
-
-
-class FileStorage:
-    """Represent an abstracted storage engine.
-
-    Attributes:
-        __file_path (str): The name of the file to save objects to.
-        __objects (dict): A dictionary of instantiated objects.
-    """
-    __file_path = "file.json"
-    __objects = {}
-
-    def all(self):
-        """Return the dictionary __objects."""
-        return FileStorage.__objects
-
-    def new(self, obj):
-        """Set in __objects obj with key <obj_class_name>.id"""
-        ocname = obj.__class__.__name__
-        FileStorage.__objects["{}.{}".format(ocname, obj.id)] = obj
+    def __repr__(self):
+        """return a string representaion
+        """
+        return self.__str__()
 
     def save(self):
-        """Serialize __objects to the JSON file __file_path."""
-        odict = FileStorage.__objects
-        objdict = {obj: odict[obj].to_custom_dict() for obj in odict.keys()}
-        with open(FileStorage.__file_path, "w") as f:
-            json.dump(objdict, f)
+        """updates the public instance attribute updated_at to current
+        """
+        self.updated_at = datetime.now()
+        models.storage.new(self)
+        models.storage.save()
 
-    def reload(self):
-        """Deserialize the JSON file __file_path to __objects, if it exists."""
-        try:
-            with open(FileStorage.__file_path) as f:
-                objdict = json.load(f)
-                for o in objdict.values():
-                    cls_name = o["__custom_class__"]
-                    del o["__custom_class__"]
-                    self.new(eval(cls_name)(**o))
-        except FileNotFoundError:
-            return
+    def to_dict(self):
+        """creates dictionary of the class  and returns
+        Return:
+            returns a dictionary of all the key values in __dict__
+        """
+        my_dict = dict(self.__dict__)
+        my_dict["__class__"] = str(type(self).__name__)
+        my_dict["created_at"] = self.created_at.isoformat()
+        my_dict["updated_at"] = self.updated_at.isoformat()
+        if my_dict.get('_sa_instance_state'):
+            del my_dict['_sa_instance_state']
+        return my_dict
+
+    def delete(self):
+        """delete the current instance from the storage
+        using file storage instance method delete
+        """
+        models.storage.delete(self)

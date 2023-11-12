@@ -1,13 +1,20 @@
 #!/usr/bin/python3
-"""Defines the UniqueAmenity class."""
-from models.base_model import BaseModel
+"""This is the amenity class"""
+from models.base_model import BaseModel, Base
+from models.place import place_amenity
+from sqlalchemy import Column, String
+from sqlalchemy.orm import relationship
 
 
-class UniqueAmenity(BaseModel):
-    """Represent a uniquely defined amenity.
-
+class Amenity(BaseModel, Base):
+    """This is the class for Amenity
     Attributes:
-        feature (str): The unique feature of the amenity.
+        name: input name
     """
-
-    feature = ""
+    __tablename__ = "amenities"
+    name = Column(String(128), nullable=False)
+    place_amenities = relationship(
+        "Place",
+        secondary=place_amenity,
+        backref="amenity"
+    )

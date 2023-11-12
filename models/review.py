@@ -1,17 +1,18 @@
 #!/usr/bin/python3
-"""Defines the GuestReview class."""
-from models.base_model import BaseModel
+"""This is the review class"""
+from models.base_model import BaseModel, Base
+from sqlalchemy import Column, String, ForeignKey
 
 
-class GuestReview(BaseModel):
-    """Represent a guest review.
-
+class Review(BaseModel, Base):
+    """This is the class for Review
     Attributes:
-        accommodation_id (str): The Accommodation id.
-        reviewer_id (str): The Reviewer id.
-        feedback_text (str): The text of the guest review.
+        __tablename__: table name
+        place_id: place id
+        user_id: user id
+        text: review description
     """
-
-    accommodation_id = ""
-    reviewer_id = ""
-    feedback_text = ""
+    __tablename__ = "reviews"
+    text = Column(String(1024), nullable=False)
+    place_id = Column(String(60), ForeignKey('places.id'), nullable=False)
+    user_id = Column(String(60), ForeignKey('users.id'), nullable=False)

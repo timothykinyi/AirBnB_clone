@@ -1,19 +1,23 @@
 #!/usr/bin/python3
-"""Defines the UniqueUser class."""
-from models.base_model import BaseModel
+"""This is the user class"""
+from models.base_model import BaseModel, Base
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import relationship
 
 
-class UniqueUser(BaseModel):
-    """Represent a unique user.
-
+class User(BaseModel, Base):
+    """This is the class for user
     Attributes:
-        user_email (str): The email of the user.
-        user_password (str): The password of the user.
-        user_first_name (str): The first name of the user.
-        user_last_name (str): The last name of the user.
+        __tablename__: Table name
+        email: email address
+        password: password for you login
+        first_name: first name
+        last_name: last name
     """
-
-    user_email = ""
-    user_password = ""
-    user_first_name = ""
-    user_last_name = ""
+    __tablename__ = "users"
+    email = Column(String(128), nullable=False)
+    password = Column(String(128), nullable=False)
+    first_name = Column(String(128), nullable=True)
+    last_name = Column(String(128), nullable=True)
+    places = relationship("Place", cascade="all, delete", backref="user")
+    reviews = relationship("Review", cascade="all, delete", backref="user")
