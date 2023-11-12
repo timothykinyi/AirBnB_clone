@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""Defines the UniqueHBNBCommand class."""
+"""Defines the HBnB console."""
 import cmd
 import re
 from shlex import split
@@ -31,14 +31,14 @@ def parse(arg):
         return retl
 
 
-class UniqueHBNBCommand(cmd.Cmd):
-    """Defines the Unique HolbertonBnB command interpreter.
+class HBNBCommand(cmd.Cmd):
+    """Defines the HolbertonBnB command interpreter.
 
     Attributes:
         prompt (str): The command prompt.
     """
 
-    prompt = "(uniquehbnb) "
+    prompt = "(hbnb) "
     __classes = {
         "BaseModel",
         "User",
@@ -90,7 +90,7 @@ class UniqueHBNBCommand(cmd.Cmd):
         argl = parse(arg)
         if len(argl) == 0:
             print("** class name missing **")
-        elif argl[0] not in UniqueHBNBCommand.__classes:
+        elif argl[0] not in HBNBCommand.__classes:
             print("** class doesn't exist **")
         else:
             print(eval(argl[0])().id)
@@ -104,7 +104,7 @@ class UniqueHBNBCommand(cmd.Cmd):
         objdict = storage.all()
         if len(argl) == 0:
             print("** class name missing **")
-        elif argl[0] not in UniqueHBNBCommand.__classes:
+        elif argl[0] not in HBNBCommand.__classes:
             print("** class doesn't exist **")
         elif len(argl) == 1:
             print("** instance id missing **")
@@ -120,7 +120,7 @@ class UniqueHBNBCommand(cmd.Cmd):
         objdict = storage.all()
         if len(argl) == 0:
             print("** class name missing **")
-        elif argl[0] not in UniqueHBNBCommand.__classes:
+        elif argl[0] not in HBNBCommand.__classes:
             print("** class doesn't exist **")
         elif len(argl) == 1:
             print("** instance id missing **")
@@ -135,7 +135,7 @@ class UniqueHBNBCommand(cmd.Cmd):
         Display string representations of all instances of a given class.
         If no class is specified, displays all instantiated objects."""
         argl = parse(arg)
-        if len(argl) > 0 and argl[0] not in UniqueHBNBCommand.__classes:
+        if len(argl) > 0 and argl[0] not in HBNBCommand.__classes:
             print("** class doesn't exist **")
         else:
             objl = []
@@ -168,7 +168,7 @@ class UniqueHBNBCommand(cmd.Cmd):
         if len(argl) == 0:
             print("** class name missing **")
             return False
-        if argl[0] not in UniqueHBNBCommand.__classes:
+        if argl[0] not in HBNBCommand.__classes:
             print("** class doesn't exist **")
             return False
         if len(argl) == 1:
@@ -194,9 +194,9 @@ class UniqueHBNBCommand(cmd.Cmd):
                 obj.__dict__[argl[2]] = valtype(argl[3])
             else:
                 obj.__dict__[argl[2]] = argl[3]
-        elif type(eval(argl[3])) == dict:  # Updated condition to check argl[3]
+        elif type(eval(argl[2])) == dict:
             obj = objdict["{}.{}".format(argl[0], argl[1])]
-            for k, v in eval(argl[3]).items():  # Updated argl[2] to argl[3]
+            for k, v in eval(argl[2]).items():
                 if (k in obj.__class__.__dict__.keys() and
                         type(obj.__class__.__dict__[k]) in {str, int, float}):
                     valtype = type(obj.__class__.__dict__[k])
@@ -207,4 +207,4 @@ class UniqueHBNBCommand(cmd.Cmd):
 
 
 if __name__ == "__main__":
-    UniqueHBNBCommand().cmdloop()
+    HBNBCommand().cmdloop()
